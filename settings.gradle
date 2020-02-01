@@ -1,2 +1,4 @@
 include ':app'
-rootProject.name='AusschankUndKoch'
+include ':OrderLibrary'
+project(':OrderLibrary').projectDir = new File('../OrderLibrary')
+

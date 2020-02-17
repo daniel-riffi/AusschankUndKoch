@@ -15,6 +15,8 @@ import java.util.function.Consumer;
 import androidx.core.content.PermissionChecker;
 import at.orderlibrary.NotfiyPositionsFinishedRequest;
 import at.orderlibrary.Order;
+import at.orderlibrary.Type;
+import at.orderlibrary.TypeRequest;
 
 public class Server {
     private String ipAddress;
@@ -22,13 +24,14 @@ public class Server {
     private ObjectInputStream inputStream;
     private ObjectOutputStream outputStream;
     private ReentrantLock lock;
-
+    private Type type;
     private int port;
 
-    public Server(String ipAddress,  int port){
+    public Server(String ipAddress,  int port, Type type){
         this.ipAddress=ipAddress;
         this.port=port;
         lock=new ReentrantLock();
+        this.type=type;
     }
     public void readOrderFromServer(final Consumer<Order> callback){
         Thread t=new Thread(() -> {
@@ -66,9 +69,14 @@ public class Server {
                 try {
                     lock.lock();
                     socket=new Socket(ipAddress,port);
-                    System.out.println("");
                     outputStream = new ObjectOutputStream(socket.getOutputStream());
                     inputStream = new ObjectInputStream(socket.getInputStream());
+
+                    TypeRequest request=new TypeRequest();
+                    request.type= type;
+                    outputStream.writeObject(request);
+                    outputStream.flush();
+
                     lock.unlock();
                     System.out.println();
                 } catch (IOException e) {

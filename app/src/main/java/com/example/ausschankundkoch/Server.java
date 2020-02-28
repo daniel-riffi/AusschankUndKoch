@@ -4,11 +4,21 @@ package com.example.ausschankundkoch;
 import android.Manifest;
 import android.os.Debug;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.lang.reflect.Modifier;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.nio.channels.ClosedByInterruptException;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
@@ -21,8 +31,8 @@ import at.orderlibrary.TypeRequest;
 public class Server {
     private String ipAddress;
     private Socket socket;
-    private ObjectInputStream inputStream;
-    private ObjectOutputStream outputStream;
+    private BufferedReader reader;
+    private PrintWriter writer;
     private ReentrantLock lock;
     private Type type;
     private int port;
@@ -35,14 +45,14 @@ public class Server {
     }
     public void readOrderFromServer(final Consumer<Order> callback){
         Thread t=new Thread(() -> {
-            while(socket!=null&&inputStream!=null){
+            while(socket!=null&&reader!=null){
                 try {
-                    Object objectFromServer=inputStream.readObject();
-                    if(objectFromServer instanceof Order){
-                        Order order=(Order) objectFromServer;
-                        callback.accept(order);
-                    }
-                } catch (Exception e) {
+                    String json=reader.readLine();
+                    Order order=new GsonBuilder().excludeFieldsWithModifiers(Modifier.PRIVATE).create()
+                            .fromJson(json, Order.class);
+                    order.reinitPositionsWithOrder();
+                    callback.accept(order);
+                } catch (IOException e) {
                     e.printStackTrace();
                     break;
                 }
@@ -51,16 +61,15 @@ public class Server {
         t.start();
     }
     public void notifyServerPositionsFinished(int positions){
-        NotfiyPositionsFinishedRequest request=new NotfiyPositionsFinishedRequest();
-        request.count=positions;
             new Thread(() -> {
-                try {
-                    outputStream.writeObject(request);
-                    outputStream.flush();
+                NotfiyPositionsFinishedRequest request=new NotfiyPositionsFinishedRequest();
+                request.count=positions;
 
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                String json=new GsonBuilder().excludeFieldsWithModifiers(Modifier.PRIVATE).create()
+                        .toJson(request);
+                writer.print(json+"\r\n");
+                writer.flush();
+
             }).start();
     }
     public boolean connect(){
@@ -68,27 +77,33 @@ public class Server {
             Thread t=new Thread(() -> {
                 try {
                     lock.lock();
-                    socket=new Socket(ipAddress,port);
-                    outputStream = new ObjectOutputStream(socket.getOutputStream());
-                    inputStream = new ObjectInputStream(socket.getInputStream());
+                    socket=new Socket();
+                    socket.connect(new InetSocketAddress(ipAddress,port),5*1000);
+                    reader=new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                    writer=new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
+
 
                     TypeRequest request=new TypeRequest();
                     request.type= type;
-                    outputStream.writeObject(request);
-                    outputStream.flush();
+
+                    String json=new GsonBuilder().excludeFieldsWithModifiers(Modifier.PRIVATE).create()
+                            .toJson(request);
+                    writer.print(json+"\r\n");
+                    writer.flush();
+
 
                     lock.unlock();
                     System.out.println();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                } catch (Exception e) {
                     lock.unlock();
                 }
 
             });
             t.start();
+
             Thread.sleep(100);
             lock.lock();
-            if(socket!=null&&inputStream!=null&&outputStream!=null) {
+            if(socket!=null&&reader!=null&&writer!=null) {
                 lock.unlock();
                 return true;
             }
@@ -100,5 +115,15 @@ public class Server {
         }
 
         return false;
+    }
+
+    public void close() {
+        try {
+            socket.close();
+            writer.close();
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

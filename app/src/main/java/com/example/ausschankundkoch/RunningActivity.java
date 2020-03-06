@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import at.orderlibrary.Order;
@@ -27,15 +29,32 @@ public class RunningActivity extends AppCompatActivity {
         textView.setText(type.name());
     }
 
-    private void loadUIInterface(Type type){
+    public static void loadUIInterface(Type type){
 
     }
 
-    private void displayOrder(Order order){
+    public static void displayOrder(Order order){
 
     }
 
-    private List<Position> addOrderToList(List<Position> positions){
-        return null;
+    public static void addOrderToList(ArrayList<Order> orders, ArrayList<Position> positions){
+        Order newOrder;
+        for(Position current : positions){
+            Order oldOrder = current.getOrder();
+            newOrder = null;
+            findOrder:
+                for(Order order : orders){
+                    if(order.orderNumber == oldOrder.orderNumber){
+                        newOrder = order;
+                        break findOrder;
+                    }
+                }
+            if(newOrder == null){
+                orders.add(oldOrder.copyOrderWithPositions(new ArrayList<>(Arrays.asList(current))));
+            }
+            else {
+                newOrder.addPosition(current);
+            }
+        }
     }
 }

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="types">
+        <item>BAR</item>
+        <item>COOK</item>
+    </string-array>
+</resources>

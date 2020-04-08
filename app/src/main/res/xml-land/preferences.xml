@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    tools:ignore="MissingDefaultResource">
+    <EditTextPreference
+        android:key="ip_address"
+        android:summary="Einstellung der IP-Adresse"
+        android:title="IP-Adresse"/>
+
+    <ListPreference
+        android:key="type"
+        android:entries="@array/types"
+        android:entryValues="@array/types"
+        android:summary="Einstellung des Modus"
+        android:title="Modus"/>
+</PreferenceScreen>

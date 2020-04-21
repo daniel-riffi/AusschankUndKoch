@@ -11,6 +11,6 @@
         android:key="type"
         android:entries="@array/types"
         android:entryValues="@array/types"
-        android:summary="Einstellung des Modus"
-        android:title="Modus"/>
+        android:summary="Einstellung des Typs"
+        android:title="Typ"/>
 </PreferenceScreen>

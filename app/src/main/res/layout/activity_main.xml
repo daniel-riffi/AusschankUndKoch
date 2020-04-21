@@ -18,5 +18,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Start"
-        android:onClick="btnStartClicked"/>
+        android:onClick="btnStartClicked"
+        android:background="@drawable/custom_button"
+        android:textColor="#FFFFFF"/>
 </LinearLayout>

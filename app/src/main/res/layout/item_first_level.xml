@@ -25,7 +25,8 @@
             android:layout_gravity="center"
             android:fontFamily="monospace"
             android:textSize="15dp"
-            android:text="Tree Node" />
+            android:text="Tree Node"
+            android:textStyle="bold"/>
     </LinearLayout>
 
 

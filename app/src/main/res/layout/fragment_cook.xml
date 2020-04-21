@@ -18,16 +18,22 @@
         android:gravity="center"
         android:orientation="vertical">
 
-        <Button
+        <ImageButton
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="45dp"
             android:id="@+id/fragBar_btnForwardFirst"
-            android:text="a" />
-        <Button
+            android:background="@drawable/custom_button"
+            android:layout_margin="2dp"
+            android:src="@drawable/arrow_img_right"
+            android:scaleType="fitCenter" />
+        <ImageButton
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="45dp"
             android:id="@+id/fragBar_btnBackwardFirst"
-            android:text="b" />
+            android:background="@drawable/custom_button"
+            android:layout_margin="2dp"
+            android:src="@drawable/arrow_img_left"
+            android:scaleType="fitCenter" />
     </LinearLayout>
     <LinearLayout
         android:id="@+id/linear_layout_inprogress_orders"
@@ -42,16 +48,22 @@
         android:orientation="vertical"
         android:gravity="center">
 
-        <Button
+        <ImageButton
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="45dp"
             android:id="@+id/fragBar_btnForwardSecond"
-            android:text="a" />
-        <Button
+            android:background="@drawable/custom_button"
+            android:layout_margin="2dp"
+            android:src="@drawable/arrow_img_right"
+            android:scaleType="fitCenter" />
+        <ImageButton
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="45dp"
             android:id="@+id/fragBar_btnBackwardSecond"
-            android:text="b" />
+            android:background="@drawable/custom_button"
+            android:layout_margin="2dp"
+            android:src="@drawable/arrow_img_left"
+            android:scaleType="fitCenter" />
     </LinearLayout>
     <LinearLayout
         android:id="@+id/linear_layout_finished_orders"

@@ -132,4 +132,9 @@ public class BarFragment extends Fragment {
             if(treeNodeOrder.hasChild()) root.addChild(treeNodeOrder);
         }
     }
+
+    public void deselectNodes(){
+        treeViewOpen.deselectAll();
+        treeViewFinished.deselectAll();
+    }
 }

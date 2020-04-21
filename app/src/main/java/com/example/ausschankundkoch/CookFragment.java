@@ -162,4 +162,10 @@ public class CookFragment extends Fragment {
             if(treeNodeOrder.hasChild()) root.addChild(treeNodeOrder);
         }
     }
+
+    public void deselectNodes() {
+        treeViewOpen.deselectAll();
+        treeViewInProgress.deselectAll();
+        treeViewFinished.deselectAll();
+    }
 }

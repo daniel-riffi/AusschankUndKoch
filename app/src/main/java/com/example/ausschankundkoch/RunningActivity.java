@@ -1,10 +1,16 @@
 package com.example.ausschankundkoch;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
+import androidx.preference.ListPreference;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,17 +34,45 @@ import me.texy.treeview.TreeView;
 
 public class RunningActivity extends AppCompatActivity {
 
+    private static final int RQ_PREFERENCES = 1234;
+
+    private SharedPreferences prefs;
+    private SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener;
+
     private FragmentManager fragmentManager;
     private BarFragment barFragment;
     private CookFragment cookFragment;
+
+    private Type currentType;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_running);
 
+        Intent intent = getIntent();
+        Bundle bundle = intent.getExtras();
+        Type type = (Type) bundle.getSerializable("type");
+
         fragmentManager = getSupportFragmentManager();
-        loadUIInterface();
+        loadUIInterface(type);
+
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        preferenceChangeListener = this::preferenceChanged;
+        prefs.registerOnSharedPreferenceChangeListener(preferenceChangeListener);
+        setTypeInPreferences(type);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        System.out.println("onResume");
+        String ipAddress = prefs.getString("ip_address", "");
+        System.out.println("ip" + ipAddress);
+        if(!connectToServer(ipAddress)){
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivityForResult(intent, RQ_PREFERENCES);
+        }
     }
 
     @Override
@@ -50,28 +84,51 @@ public class RunningActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
         int id = item.getItemId();
-        return true;
-
-        //TODO: PREFERENCES
+        if(id == R.id.menu_preferences){
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivityForResult(intent, RQ_PREFERENCES);
+        }
+        else if(id == R.id.menu_deselect){
+            if(currentType == Type.BAR) barFragment.deselectNodes();
+            else if(currentType == Type.COOK) cookFragment.deselectNodes();
+        }
+        return super.onOptionsItemSelected(item);
     }
 
-    private void loadUIInterface(){
-        Intent intent = getIntent();
-        Bundle bundle = intent.getExtras();
-        Type type = (Type) bundle.getSerializable("type");
-
+    private void loadUIInterface(Type type){
         if(type == Type.BAR){
             barFragment = new BarFragment();
             fragmentManager.beginTransaction()
                                 .replace(R.id.fragmentViewHolder, barFragment)
-                                .commit();
+                                .commitAllowingStateLoss();
         }
         else {
             cookFragment = new CookFragment();
             fragmentManager.beginTransaction()
                                 .replace(R.id.fragmentViewHolder, cookFragment)
-                                .commit();
+                                .commitAllowingStateLoss();
         }
+        currentType = type;
+    }
+
+    private void setTypeInPreferences(Type type) {
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("type", type.name());
+        editor.commit();
+    }
+
+    private void preferenceChanged(SharedPreferences sharedPrefs, String key) {
+        String sValue = sharedPrefs.getString(key, "");
+        if(key.equals("ip_address")){
+            //ipAddress = sValue;
+        }
+        else if(key.equals("type")) {
+            loadUIInterface(Type.valueOf(sValue));
+        }
+    }
+
+    private boolean connectToServer(String ip) {
+        return ip.equals("hallo");
     }
 
     public static void selectTreeNodes(TreeView treeView, ArrayList<Position> selectedPositions){

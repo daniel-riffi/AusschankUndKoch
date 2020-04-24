@@ -13,6 +13,7 @@ import android.widget.LinearLayout;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import at.orderlibrary.Order;
 import at.orderlibrary.Position;
@@ -78,6 +79,7 @@ public class CookFragment extends Fragment {
     private void moveForwardButtonFirstClicked() {
         ArrayList<Position> selectedPositions = new ArrayList<>(RunningActivity.getSelectedPositions(treeViewOpen));
         RunningActivity.addOrderToList(inProgressOrders, selectedPositions);
+        RunningActivity.removeOrderWithNoPositions(openOrders);
         buildTreeViews();
         RunningActivity.selectTreeNodes(treeViewOpen, selectedPositions);
     }
@@ -85,6 +87,7 @@ public class CookFragment extends Fragment {
     private void moveBackwardFirstButtonClicked() {
         ArrayList<Position> selectedPositions = new ArrayList<>(RunningActivity.getSelectedPositions(treeViewInProgress));
         RunningActivity.addOrderToList(openOrders, selectedPositions);
+        RunningActivity.removeOrderWithNoPositions(inProgressOrders);
         buildTreeViews();
         RunningActivity.selectTreeNodes(treeViewInProgress, selectedPositions);
     }
@@ -92,6 +95,12 @@ public class CookFragment extends Fragment {
     private void moveForwardButtonSecondClicked() {
         ArrayList<Position> selectedPositions = new ArrayList<>(RunningActivity.getSelectedPositions(treeViewInProgress));
         RunningActivity.addOrderToList(finishedOrders, selectedPositions);
+        RunningActivity.removeOrderWithNoPositions(inProgressOrders);
+        for(Order order : selectedPositions.stream().map(Position::getOrder).collect(Collectors.toList())){
+            if(checkIfOrderIsFinished(order.orderNumber)){
+                finishedOrders.remove(order);
+            }
+        }
         buildTreeViews();
         RunningActivity.selectTreeNodes(treeViewInProgress, selectedPositions);
     }
@@ -99,6 +108,7 @@ public class CookFragment extends Fragment {
     private void moveBackwardButtonSecondClicked() {
         ArrayList<Position> selectedPositions = new ArrayList<>(RunningActivity.getSelectedPositions(treeViewFinished));
         RunningActivity.addOrderToList(inProgressOrders, selectedPositions);
+        RunningActivity.removeOrderWithNoPositions(finishedOrders);
         buildTreeViews();
         RunningActivity.selectTreeNodes(treeViewFinished, selectedPositions);
     }
@@ -150,16 +160,16 @@ public class CookFragment extends Fragment {
         viewGroupFinished.addView(viewFinished);
     }
 
-    private void fillTreeView(ArrayList<Order> orders, TreeNode root){
-        for(Order order : orders){
+    private void fillTreeView(ArrayList<Order> orders, TreeNode root) {
+        for (Order order : orders) {
             TreeNode treeNodeOrder = new TreeNode(order);
             treeNodeOrder.setLevel(0);
-            for(Position position : order.positions){
+            for (Position position : order.positions) {
                 TreeNode treeNodePosition = new TreeNode(position);
                 treeNodePosition.setLevel(1);
                 treeNodeOrder.addChild(treeNodePosition);
             }
-            if(treeNodeOrder.hasChild()) root.addChild(treeNodeOrder);
+            if (treeNodeOrder.hasChild()) root.addChild(treeNodeOrder);
         }
     }
 
@@ -167,5 +177,13 @@ public class CookFragment extends Fragment {
         treeViewOpen.deselectAll();
         treeViewInProgress.deselectAll();
         treeViewFinished.deselectAll();
+    }
+
+    public boolean checkIfOrderIsFinished(int orderNumber) {
+        return  inProgressOrders.stream()
+                            .noneMatch(x -> x.orderNumber == orderNumber)
+                &&
+                openOrders.stream()
+                            .noneMatch(x -> x.orderNumber == orderNumber);
     }
 }

@@ -16,6 +16,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import at.orderlibrary.Order;
 import at.orderlibrary.Position;
@@ -71,6 +72,12 @@ public class BarFragment extends Fragment {
     private void moveForwardButtonClicked() {
         ArrayList<Position> selectedPositions = new ArrayList<>(RunningActivity.getSelectedPositions(treeViewOpen));
         RunningActivity.addOrderToList(finishedOrders, selectedPositions);
+        RunningActivity.removeOrderWithNoPositions(openOrders);
+        for(Order order : selectedPositions.stream().map(Position::getOrder).collect(Collectors.toList())){
+            if(checkIfOrderIsFinished(order.orderNumber)){
+                finishedOrders.remove(order);
+            }
+        }
         buildTreeViews();
         RunningActivity.selectTreeNodes(treeViewOpen, selectedPositions);
     }
@@ -78,6 +85,7 @@ public class BarFragment extends Fragment {
     private void moveBackwardButtonClicked() {
         ArrayList<Position> selectedPositions = new ArrayList<>(RunningActivity.getSelectedPositions(treeViewFinished));
         RunningActivity.addOrderToList(openOrders, selectedPositions);
+        RunningActivity.removeOrderWithNoPositions(finishedOrders);
         buildTreeViews();
         RunningActivity.selectTreeNodes(treeViewFinished, selectedPositions);
     }
@@ -136,5 +144,10 @@ public class BarFragment extends Fragment {
     public void deselectNodes(){
         treeViewOpen.deselectAll();
         treeViewFinished.deselectAll();
+    }
+
+    private boolean checkIfOrderIsFinished(int orderNumber) {
+        return openOrders.stream()
+                            .noneMatch(x -> x.orderNumber == orderNumber);
     }
 }

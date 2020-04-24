@@ -68,8 +68,8 @@ public class RunningActivity extends AppCompatActivity {
         super.onResume();
         System.out.println("onResume");
         String ipAddress = prefs.getString("ip_address", "");
-        System.out.println("ip" + ipAddress);
-        if(!connectToServer(ipAddress)){
+        String port = prefs.getString("port", "");
+        if(!connectToServer(ipAddress, port)){
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivityForResult(intent, RQ_PREFERENCES);
         }
@@ -127,8 +127,8 @@ public class RunningActivity extends AppCompatActivity {
         }
     }
 
-    private boolean connectToServer(String ip) {
-        return ip.equals("hallo");
+    private boolean connectToServer(String ip, String port) {
+        return ip.equals("10.0.0.4") && port.equals("5000");
     }
 
     public static void selectTreeNodes(TreeView treeView, ArrayList<Position> selectedPositions){
@@ -180,6 +180,10 @@ public class RunningActivity extends AppCompatActivity {
                 }
             }
         }
+    }
+
+    public static void removeOrderWithNoPositions(List<Order> orders){
+        orders.removeIf(x -> x.positions.size() == 0);
     }
 
     public static void displayOrder(Order order){

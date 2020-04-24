@@ -7,6 +7,11 @@
         android:summary="Einstellung der IP-Adresse"
         android:title="IP-Adresse"/>
 
+    <EditTextPreference
+        android:key="port"
+        android:summary="Einstellung der Portnummer"
+        android:title="Portnummer"/>
+
     <ListPreference
         android:key="type"
         android:entries="@array/types"

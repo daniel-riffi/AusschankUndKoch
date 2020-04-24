@@ -15,28 +15,23 @@ import at.orderlibrary.Type;
 
 public class MainActivity extends AppCompatActivity {
 
-    Spinner spinner;
-    ArrayAdapter<Type> adapter;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         getSupportActionBar().hide();
-
-        initialize();
     }
 
-    private void initialize() {
-        spinner = findViewById(R.id.spType);
-        adapter = new ArrayAdapter<>(this, R.layout.support_simple_spinner_dropdown_item, Arrays.asList(Type.BAR, Type.COOK));
-        spinner.setAdapter(adapter);
-    }
-
-    public void btnStartClicked(View view) {
+    public void btnCookClicked(View view) {
         Intent intent = new Intent(this, RunningActivity.class);
-        intent.putExtra("type", (Type)spinner.getSelectedItem());
+        intent.putExtra("type", Type.COOK);
+        startActivity(intent);
+    }
+
+    public void btnBarClicked(View view) {
+        Intent intent = new Intent(this, RunningActivity.class);
+        intent.putExtra("type", Type.BAR);
         startActivity(intent);
     }
 }

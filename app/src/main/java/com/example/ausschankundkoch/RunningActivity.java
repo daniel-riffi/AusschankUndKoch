@@ -67,9 +67,9 @@ public class RunningActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         System.out.println("onResume");
-        String ipAddress = prefs.getString("ip_address", "");
-        String port = prefs.getString("port", "");
-        if(!connectToServer(ipAddress, port)){
+        String ipAddress = prefs.getString("ip_address", "empty");
+        String port = prefs.getString("port", "empty");
+        if(ipAddress.equals("empty") || port.equals("empty") || !connectToServer(ipAddress, port)){
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivityForResult(intent, RQ_PREFERENCES);
         }

@@ -19,6 +19,7 @@ import java.lang.reflect.Modifier;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.channels.ClosedByInterruptException;
+import java.util.ArrayList;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
@@ -36,13 +37,38 @@ public class Server {
     private ReentrantLock lock;
     private Type type;
     private int port;
+    private static Server instance;
+    private ArrayList<Consumer> callbacks;
 
-    public Server(String ipAddress,  int port, Type type){
-        this.ipAddress=ipAddress;
-        this.port=port;
+    public Server(){
         lock=new ReentrantLock();
-        this.type=type;
+        callbacks = new ArrayList<>();
     }
+
+    public String getIpAddress() {
+        return ipAddress;
+    }
+
+    public void setIpAddress(String ipAddress) {
+        this.ipAddress = ipAddress;
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
     public void readOrderFromServer(final Consumer<Order> callback){
         Thread t=new Thread(() -> {
             while(socket!=null&&reader!=null){
@@ -91,7 +117,7 @@ public class Server {
                     writer.print(json+"\r\n");
                     writer.flush();
 
-
+                    callbacks.forEach(x -> x.accept(null));
                     lock.unlock();
                     System.out.println();
                 } catch (Exception e) {
@@ -125,5 +151,26 @@ public class Server {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public synchronized void onOpen(Consumer c){
+        if(!isOpen()){
+            if(callbacks==null){
+                callbacks=new ArrayList<>();
+            }
+            callbacks.add(c);
+        }else{
+            c.accept(null);
+        }
+
+    }
+
+    public boolean isOpen(){
+        return reader!=null&&writer!=null;
+    }
+
+    public static Server getInstance(){
+        if(instance == null) instance = new Server();
+        return instance;
     }
 }

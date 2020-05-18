@@ -1,9 +1,11 @@
 package com.example.ausschankundkoch;
 
+import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
@@ -20,6 +22,7 @@ import java.util.stream.Collectors;
 
 import at.orderlibrary.Order;
 import at.orderlibrary.Position;
+import at.orderlibrary.Type;
 import at.orderlibrary.UnitTestVariables;
 import me.texy.treeview.TreeNode;
 import me.texy.treeview.TreeView;
@@ -48,8 +51,8 @@ public class BarFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         UnitTestVariables.ResetVariables();
-        openOrders = new ArrayList<>(Arrays.asList(UnitTestVariables.order1, UnitTestVariables.order2));
-        finishedOrders = new ArrayList<>(Arrays.asList(UnitTestVariables.order3));
+        openOrders = new ArrayList<>();//Arrays.asList(UnitTestVariables.order1, UnitTestVariables.order2));
+        finishedOrders = new ArrayList<>();//Arrays.asList(UnitTestVariables.order3));
     }
 
     @Override
@@ -76,6 +79,7 @@ public class BarFragment extends Fragment {
         for(Order order : selectedPositions.stream().map(Position::getOrder).collect(Collectors.toList())){
             if(checkIfOrderIsFinished(order.orderNumber)){
                 finishedOrders.remove(order);
+                Server.getInstance().notifyServerPositionsFinished(order.positions.size());
             }
         }
         buildTreeViews();
@@ -101,7 +105,7 @@ public class BarFragment extends Fragment {
         super.onDetach();
     }
 
-    private void buildTreeViews() {
+    public void buildTreeViews() {
 
         rootOpen = TreeNode.root();
         rootFinished = TreeNode.root();
@@ -149,5 +153,9 @@ public class BarFragment extends Fragment {
     private boolean checkIfOrderIsFinished(int orderNumber) {
         return openOrders.stream()
                             .noneMatch(x -> x.orderNumber == orderNumber);
+    }
+
+    public void addOrder(Order order){
+        openOrders.add(order);
     }
 }

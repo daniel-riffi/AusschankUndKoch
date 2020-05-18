@@ -1,9 +1,11 @@
 package com.example.ausschankundkoch;
 
+import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
@@ -17,6 +19,7 @@ import java.util.stream.Collectors;
 
 import at.orderlibrary.Order;
 import at.orderlibrary.Position;
+import at.orderlibrary.Type;
 import at.orderlibrary.UnitTestVariables;
 import me.texy.treeview.TreeNode;
 import me.texy.treeview.TreeView;
@@ -50,9 +53,10 @@ public class CookFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         UnitTestVariables.ResetVariables();
-        openOrders = new ArrayList<>(Arrays.asList(UnitTestVariables.order3, UnitTestVariables.order2));
-        inProgressOrders = new ArrayList<>(Arrays.asList(UnitTestVariables.order1));
+        openOrders = new ArrayList<>();//Arrays.asList(UnitTestVariables.order3, UnitTestVariables.order2));
+        inProgressOrders = new ArrayList<>();//Arrays.asList(UnitTestVariables.order1));
         finishedOrders = new ArrayList<>();
+
     }
 
     @Override
@@ -99,6 +103,7 @@ public class CookFragment extends Fragment {
         for(Order order : selectedPositions.stream().map(Position::getOrder).collect(Collectors.toList())){
             if(checkIfOrderIsFinished(order.orderNumber)){
                 finishedOrders.remove(order);
+                Server.getInstance().notifyServerPositionsFinished(order.positions.size());
             }
         }
         buildTreeViews();
@@ -124,7 +129,7 @@ public class CookFragment extends Fragment {
         super.onDetach();
     }
 
-    private void buildTreeViews() {
+    public void buildTreeViews() {
         rootOpen = TreeNode.root();
         rootInProgress = TreeNode.root();
         rootFinished = TreeNode.root();
@@ -185,5 +190,9 @@ public class CookFragment extends Fragment {
                 &&
                 openOrders.stream()
                             .noneMatch(x -> x.orderNumber == orderNumber);
+    }
+
+    public void addOrder(Order order){
+        openOrders.add(order);
     }
 }

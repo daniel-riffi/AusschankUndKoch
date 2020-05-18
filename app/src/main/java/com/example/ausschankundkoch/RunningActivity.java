@@ -7,6 +7,7 @@ import androidx.preference.ListPreference;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -20,6 +21,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -43,7 +45,9 @@ public class RunningActivity extends AppCompatActivity {
     private BarFragment barFragment;
     private CookFragment cookFragment;
 
-    private Type currentType;
+    public static Type currentType;
+
+    private boolean preferenceChanged;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,17 +65,28 @@ public class RunningActivity extends AppCompatActivity {
         preferenceChangeListener = this::preferenceChanged;
         prefs.registerOnSharedPreferenceChangeListener(preferenceChangeListener);
         setTypeInPreferences(type);
+
+        preferenceChanged = true;
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         System.out.println("onResume");
-        String ipAddress = prefs.getString("ip_address", "empty");
-        String port = prefs.getString("port", "empty");
-        if(ipAddress.equals("empty") || port.equals("empty") || !connectToServer(ipAddress, port)){
-            Intent intent = new Intent(this, SettingsActivity.class);
-            startActivityForResult(intent, RQ_PREFERENCES);
+        if(preferenceChanged){
+            preferenceChanged = false;
+            String ipAddress = prefs.getString("ip_address", "empty");
+            String port = prefs.getString("port", "empty");
+            boolean connected = connectToServer(ipAddress, port);
+            if(ipAddress.equals("empty") || port.equals("empty") || !connected){
+                Intent intent = new Intent(this, SettingsActivity.class);
+                startActivityForResult(intent, RQ_PREFERENCES);
+            }
+            else if(connected){
+                Server.getInstance().onOpen(x -> {
+                    Server.getInstance().readOrderFromServer(this::receivedOrderFromServer);
+                });
+            }
         }
     }
 
@@ -95,7 +110,19 @@ public class RunningActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    private void receivedOrderFromServer(Order order) {
+        if(currentType == Type.BAR){
+            barFragment.addOrder(order);
+            runOnUiThread(() -> barFragment.buildTreeViews());
+        }
+        else {
+            cookFragment.addOrder(order);
+            runOnUiThread(() -> cookFragment.buildTreeViews());
+        }
+    }
+
     private void loadUIInterface(Type type){
+        currentType = type;
         if(type == Type.BAR){
             barFragment = new BarFragment();
             fragmentManager.beginTransaction()
@@ -108,7 +135,6 @@ public class RunningActivity extends AppCompatActivity {
                                 .replace(R.id.fragmentViewHolder, cookFragment)
                                 .commitAllowingStateLoss();
         }
-        currentType = type;
     }
 
     private void setTypeInPreferences(Type type) {
@@ -125,10 +151,20 @@ public class RunningActivity extends AppCompatActivity {
         else if(key.equals("type")) {
             loadUIInterface(Type.valueOf(sValue));
         }
+        preferenceChanged = true;
     }
 
     private boolean connectToServer(String ip, String port) {
-        return ip.equals("10.0.0.4") && port.equals("5000");
+        Server server = Server.getInstance();
+        server.setIpAddress(ip);
+        try {
+            server.setPort(Integer.parseInt(port));
+        }
+        catch(NumberFormatException e){
+            return false;
+        }
+        server.setType(currentType);
+        return server.connect();
     }
 
     public static void selectTreeNodes(TreeView treeView, ArrayList<Position> selectedPositions){
@@ -184,9 +220,5 @@ public class RunningActivity extends AppCompatActivity {
 
     public static void removeOrderWithNoPositions(List<Order> orders){
         orders.removeIf(x -> x.positions.size() == 0);
-    }
-
-    public static void displayOrder(Order order){
-
     }
 }

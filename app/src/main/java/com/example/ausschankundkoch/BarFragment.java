@@ -78,8 +78,14 @@ public class BarFragment extends Fragment {
         RunningActivity.removeOrderWithNoPositions(openOrders);
         for(Order order : selectedPositions.stream().map(Position::getOrder).collect(Collectors.toList())){
             if(checkIfOrderIsFinished(order.orderNumber)){
+                Server.getInstance().notifyServerPositionsFinished(finishedOrders.stream()
+                        .filter(x -> x.orderNumber == order.orderNumber)
+                        .findFirst().get()
+                        .positions
+                        .stream()
+                        .mapToInt(x -> x.amount)
+                        .sum());
                 finishedOrders.remove(order);
-                Server.getInstance().notifyServerPositionsFinished(order.positions.size());
             }
         }
         buildTreeViews();

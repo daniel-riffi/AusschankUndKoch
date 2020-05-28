@@ -69,7 +69,7 @@ public class Server {
         this.port = port;
     }
 
-    public void readOrderFromServer(final Consumer<Order> callback){
+    public void readOrderFromServer(Consumer<Order> callback){
         Thread t=new Thread(() -> {
             while(socket!=null&&reader!=null){
                 try {
@@ -100,6 +100,9 @@ public class Server {
     }
     public boolean connect(){
         try {
+            if(isOpen()){
+                close();
+            }
             Thread t=new Thread(() -> {
                 try {
                     lock.lock();
@@ -151,6 +154,9 @@ public class Server {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        socket = null;
+        writer = null;
+        reader = null;
     }
 
     public synchronized void onOpen(Consumer c){

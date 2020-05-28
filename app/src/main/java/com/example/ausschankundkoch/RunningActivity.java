@@ -67,6 +67,7 @@ public class RunningActivity extends AppCompatActivity {
         setTypeInPreferences(type);
 
         preferenceChanged = true;
+
     }
 
     @Override
@@ -128,12 +129,14 @@ public class RunningActivity extends AppCompatActivity {
             fragmentManager.beginTransaction()
                                 .replace(R.id.fragmentViewHolder, barFragment)
                                 .commitAllowingStateLoss();
+            setTitle("Ausschank");
         }
         else {
             cookFragment = new CookFragment();
             fragmentManager.beginTransaction()
                                 .replace(R.id.fragmentViewHolder, cookFragment)
                                 .commitAllowingStateLoss();
+            setTitle("Koch");
         }
     }
 

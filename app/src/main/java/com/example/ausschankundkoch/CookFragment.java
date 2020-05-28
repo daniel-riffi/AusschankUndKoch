@@ -56,7 +56,6 @@ public class CookFragment extends Fragment {
         openOrders = new ArrayList<>();//Arrays.asList(UnitTestVariables.order3, UnitTestVariables.order2));
         inProgressOrders = new ArrayList<>();//Arrays.asList(UnitTestVariables.order1));
         finishedOrders = new ArrayList<>();
-
     }
 
     @Override

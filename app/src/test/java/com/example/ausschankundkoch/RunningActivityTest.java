@@ -22,7 +22,7 @@ public class RunningActivityTest {
 
     @Test
     public void T01_addOrderToList(){
-        Order order = new Order(2, 6, new ArrayList<>(Arrays.asList(UnitTestVariables.position5)));
+        Order order = new Order(2, "6", new ArrayList<>(Arrays.asList(UnitTestVariables.position5)));
         ArrayList<Order> inProgress = new ArrayList<>(Arrays.asList(order));
 
         ArrayList<Order> toDo = new ArrayList<>(Arrays.asList(UnitTestVariables.order1, UnitTestVariables.order2));
